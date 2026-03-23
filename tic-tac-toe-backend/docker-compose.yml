@@ -1,0 +1,46 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:12.2-alpine
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - data:/var/lib/postgresql/data
+    expose:
+      - "8080"
+      - "5432"
+    ports:
+      - "5432:5432"
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "${DB_NAME}"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  nakama:
+    image: heroiclabs/nakama:3.21.1
+    entrypoint:
+      - "/bin/sh"
+      - "-ecx"
+      - >
+        /nakama/nakama migrate up --database.address postgres:${POSTGRES_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME} &&
+        exec /nakama/nakama --name nakama1 --database.address postgres:${POSTGRES_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME} --logger.level INFO --session.token_expiry_sec 7200 --metrics.prometheus_port 9100 --config /nakama/data/local.yml
+    restart: "no"
+    links:
+      - "postgres:db"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./build:/nakama/data/modules
+      - ./local.yml:/nakama/data/local.yml
+    ports:
+      - "7349:7349"
+      - "7350:7350"
+      - "7351:7351"
+      - "9100:9100"
+
+volumes:
+  data:

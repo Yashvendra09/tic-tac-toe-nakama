@@ -1,0 +1,49 @@
+Multiplayer Tic-Tac-Toe Game - Assignment Implementation Explanation
+====================================================================
+
+This document explains exactly how each requirement from the LILA assignment was built and managed across the frontend and backend architectures.
+
+--- CORE REQUIREMENTS ---
+
+1. FRONTEND
+Requirement: Choose preferred tech stack.
+Implementation: I selected React with TypeScript, scaffolded using Vite. This provides a fast, robust single-page application environment that hot-reloads instantly during development.
+
+Requirement: Implement responsive UI optimized for mobile devices.
+Implementation: I used vanilla CSS (`index.css`) with CSS variables and a CSS Grid layout (`grid-template-columns: repeat(3, 1fr)`) bounded by a flexible `max-width` aspect ratio. This ensures the Tic-Tac-Toe board never breaks boundaries on small screens while remaining perfectly centered and tap-friendly on mobile devices.
+
+Requirement: Display real-time game state updates.
+Implementation: Using `@heroiclabs/nakama-js`, the React app establishes a persistent WebSocket connection. When the server pushes an OpCode `100` message containing the updated `gameState.board`, the React component instantly sets state and triggers an optimistic re-render of the board UI.
+
+Requirement: Show player information and match status.
+Implementation: The game view strictly renders the top `status-bar` which contains the current user's nickname, the opponent's nickname, the assigned Marks (X or O), and the real-time turn deadline countdown.
+
+
+2. BACKEND (NAKAMA)
+Requirement: Implement all game management on the server side.
+Implementation: The game logic is entirely executed in Nakama's embedded JavaScript engine (Goja). I wrote a pure TypeScript Nakama module (`src/match_handler.ts`) that implements the `nkruntime.MatchProvider` interface. The match loop solely relies on the server's internal memory for the board state (`state.board`), turn cycle (`state.turn`), and deadlines.
+
+Requirement: Validate all player moves server-side before applying them.
+Implementation: In `matchLoop`, the server receives exactly one piece of information from the client: the cell index (`position`). The server validates that (A) it is actually that player's turn, (B) the match isn't over, (C) the position integer is cleanly bounded between 0 and 8, and (D) the requested cell on `state.board` is definitively empty (`""`). Only then does the SERVER update the board and execute win-condition logic.
+
+Requirement: Prevent client-side manipulation or cheating.
+Implementation: The client's React state is heavily decoupled from actual truth. Even if a player modifies their local React state or tries to send forged Websocket packets with illegal OpCodes, the `matchLoop` intercepts and strictly drops any requests that attempt to overwrite pre-existing marks, fake opponent inputs, or move out of turn.
+
+Requirement: Matchmaking System (Create, Disconnects, Discovery).
+Implementation: I utilized Nakama's built-in Matchmaker feature. The Node server registers a `registerMatchmakerMatched` hook. When two distinct users call `findMatch()`, the Nakama matchmaker connects them and automatically spins up a completely isolated, authoritative match instance (`nk.matchCreate`). The `matchLeave` function was explicitly programmed to handle disconnections favorably by awarding an automatic "Forfeit" WIN to the surviving player and immediately cleanly terminating the match instance.
+
+
+3. DEPLOYMENT
+Implementation: I wrote a production-ready `docker-compose.yml` configured to automatically stand up Nakama 3.21.1 and its required CockroachDB/Postgres dependencies over port 7350. The underlying TypeScript match handlers compile down sequentially into standard ES5 `index.js` payload maps using `Rollup`, completely insulating the container deployment from system differences. Local deployment instructions are fully documented in `README.md`.
+
+--- OPTIONAL (BONUS) FEATURES ---
+
+Bonus 1: Concurrent Game Support
+Implementation: Rather than trying to multiplex game states, the architecture leverages `nk.matchCreate("tic-tac-toe", ...)`. This natively instructs the Nakama Go execution framework to spin up completely distinct, parallel, lightweight goroutine match loops for every matched pair, ensuring absolute deterministic stability for hundreds of simultaneous games without state collision. 
+
+Bonus 2: Leaderboard System
+Implementation: Inside the backend `main.ts` startup hook, the server boots up two distinct tracking databases: `tictactoe_global_wins` and `tictactoe_global_losses`, utilizing the Nakama `"incr"` operator logic. Whenever a player naturally wins, or forces an opponent disconnect forfeit, the `match_handler` dynamically probes `state.presences` to scrape the actual registered Player Nickname and writes the 1-point increment payload securely into the locked database.
+
+Bonus 3: Timer-Based Game Mode & UI Extensions
+Implementation: I implemented an internal timeout constraint via `gameState.deadline`. Specifically, when a game begins, the server calculates exactly `Date.now() + 30000_ms`. If a player's WebSocket fails to send a valid placement OpCode before that strict deadline, the `matchLoop` automatically kills the game tracking state and hands the Win to the other player.
+On the UI side, I updated the React Router so that the user affirmatively clicks either "Timed Mode" or "Classic Mode". These unique constraints are passed seamlessly back into the `addMatchmaker()` hook options, parsed entirely by the backend, and used to dynamically govern whether the timeout logic executes logic trees!

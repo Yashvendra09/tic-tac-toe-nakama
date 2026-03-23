@@ -1,0 +1,10 @@
+﻿     leaderboard_id      |               owner_id               | username | score |          update_time          
+-------------------------+--------------------------------------+----------+-------+-------------------------------
+ tictactoe_global_wins   | a275fd32-2f19-4206-a1df-e0d74f9e7abd | 11       |     2 | 2026-03-22 20:11:22.521633+00
+ tictactoe_global_losses | 81ddfceb-78ba-46b2-a77f-1e86dbcf8a98 | kvsv     |     1 | 2026-03-22 20:13:42.313296+00
+ tictactoe_global_wins   | 81ddfceb-78ba-46b2-a77f-1e86dbcf8a98 | kvsv     |     1 | 2026-03-22 20:14:39.646257+00
+ tictactoe_global_losses | 60bebf8a-f0e8-4869-b83f-292a8d60eed8 | xcbvnb   |     3 | 2026-03-22 20:14:39.654549+00
+ tictactoe_global_wins   | 60bebf8a-f0e8-4869-b83f-292a8d60eed8 | xcbvnb   |     2 | 2026-03-23 17:56:51.599171+00
+ tictactoe_global_losses | 410a1500-3636-4e6b-9798-0f181e6a1f33 | 1        |     1 | 2026-03-23 17:56:51.608078+00
+(6 rows)
+
