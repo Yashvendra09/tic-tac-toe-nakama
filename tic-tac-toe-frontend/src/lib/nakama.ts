@@ -14,7 +14,7 @@ export class GameClient {
       import.meta.env.VITE_NAKAMA_SERVER_KEY,
       import.meta.env.VITE_NAKAMA_HOST,
       "7350",
-      tr
+      true
     );
   }
 
