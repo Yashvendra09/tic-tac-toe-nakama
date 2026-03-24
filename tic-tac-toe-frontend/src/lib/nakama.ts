@@ -9,11 +9,12 @@ export class GameClient {
   public matchId: string | null = null;
 
   constructor() {
+    const useSSL = true;
     this.client = new Client(
       import.meta.env.VITE_NAKAMA_SERVER_KEY,
       import.meta.env.VITE_NAKAMA_HOST,
-      import.meta.env.VITE_NAKAMA_PORT,
-      import.meta.env.VITE_NAKAMA_USE_SSL === "true"
+      useSSL ? "443" : "7350",
+      useSSL
     );
   }
 
@@ -49,7 +50,7 @@ export class GameClient {
   async connectSocket(onMatchData: (data: MatchData) => void, onMatchPresence: (presence: any) => void): Promise<Socket> {
     if (!this.session) throw new Error("Not authenticated");
 
-    this.socket = this.client.createSocket();
+    this.socket = this.client.createSocket(useSSL, false);
     this.socket.onmatchdata = onMatchData;
     this.socket.onmatchpresence = onMatchPresence;
 
