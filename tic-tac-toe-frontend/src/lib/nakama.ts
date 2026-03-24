@@ -14,7 +14,7 @@ export class GameClient {
       import.meta.env.VITE_NAKAMA_SERVER_KEY,
       import.meta.env.VITE_NAKAMA_HOST,
       "7350",
-      true
+      tr
     );
   }
 
@@ -50,7 +50,7 @@ export class GameClient {
   async connectSocket(onMatchData: (data: MatchData) => void, onMatchPresence: (presence: any) => void): Promise<Socket> {
     if (!this.session) throw new Error("Not authenticated");
 
-    this.socket = this.client.createSocket(this.useSSL, false);
+    this.socket = this.client.createSocket(true, false);
     this.socket.onmatchdata = onMatchData;
     this.socket.onmatchpresence = onMatchPresence;
 
