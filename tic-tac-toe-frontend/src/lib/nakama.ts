@@ -13,8 +13,8 @@ export class GameClient {
     this.client = new Client(
       import.meta.env.VITE_NAKAMA_SERVER_KEY,
       import.meta.env.VITE_NAKAMA_HOST,
-      this.useSSL ? "443" : "7350",
-      this.useSSL
+      "7350",
+      true
     );
   }
 
