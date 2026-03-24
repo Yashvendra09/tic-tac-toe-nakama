@@ -3,7 +3,6 @@ import type { Session, Socket, MatchData } from '@heroiclabs/nakama-js';
 
 // The singleton instance
 export class GameClient {
-  private useSSL: boolean = true;
   private client: Client;
   public session: Session | null = null;
   public socket: Socket | null = null;
@@ -13,7 +12,7 @@ export class GameClient {
     this.client = new Client(
       import.meta.env.VITE_NAKAMA_SERVER_KEY,
       import.meta.env.VITE_NAKAMA_HOST,
-      "7350",
+      undefined,
       true
     );
   }
