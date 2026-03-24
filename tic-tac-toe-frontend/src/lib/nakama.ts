@@ -3,18 +3,18 @@ import type { Session, Socket, MatchData } from '@heroiclabs/nakama-js';
 
 // The singleton instance
 export class GameClient {
+  private useSSL: boolean = true;
   private client: Client;
   public session: Session | null = null;
   public socket: Socket | null = null;
   public matchId: string | null = null;
 
   constructor() {
-    const useSSL = true;
     this.client = new Client(
       import.meta.env.VITE_NAKAMA_SERVER_KEY,
       import.meta.env.VITE_NAKAMA_HOST,
-      useSSL ? "443" : "7350",
-      useSSL
+      this.useSSL ? "443" : "7350",
+      this.useSSL
     );
   }
 
@@ -50,7 +50,7 @@ export class GameClient {
   async connectSocket(onMatchData: (data: MatchData) => void, onMatchPresence: (presence: any) => void): Promise<Socket> {
     if (!this.session) throw new Error("Not authenticated");
 
-    this.socket = this.client.createSocket(useSSL, false);
+    this.socket = this.client.createSocket(this.useSSL, false);
     this.socket.onmatchdata = onMatchData;
     this.socket.onmatchpresence = onMatchPresence;
 
