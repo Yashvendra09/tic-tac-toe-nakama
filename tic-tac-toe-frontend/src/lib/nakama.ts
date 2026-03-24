@@ -12,7 +12,7 @@ export class GameClient {
     this.client = new Client(
       import.meta.env.VITE_NAKAMA_SERVER_KEY,
       import.meta.env.VITE_NAKAMA_HOST,
-      undefined,
+      "443",
       true
     );
   }
