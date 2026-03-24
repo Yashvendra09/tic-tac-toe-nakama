@@ -9,7 +9,4 @@ socket:
   server_key: "supersecretkey123"
   port: 7350
   max_message_size_bytes: 4096
-  max_request_size_bytes: 4096
-database:
-  address:
-    - "${DATABASE_URL}"  
+  max_request_size_bytes: 4096  
