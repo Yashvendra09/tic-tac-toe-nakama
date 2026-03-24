@@ -1,58 +1,147 @@
-# Multiplayer Tic-Tac-Toe with Nakama
+# 🎮 Real-Time Multiplayer Tic-Tac-Toe
 
-A full-stack multiplayer Tic-Tac-Toe game with a server-authoritative backend powered by Nakama (TypeScript) and a responsive, beautiful frontend powered by React (Vite+TS).
+A production-ready, real-time multiplayer Tic-Tac-Toe game built using **Nakama (game server)** and **React (frontend)**, supporting live matchmaking, WebSocket-based gameplay, and global leaderboards.
 
-## Features
-- **Server-Authoritative Validation**: All move logic is validated on the backend. Clients cannot cheat.
-- **Matchmaking**: Built-in Nakama matchmaking seamlessly connects players.
-- **Turn Timers**: Built-in turn timers (30 seconds) on the server. If a player fails to move within the deadline, they instantly forfeit the match.
-- **Leaderboards**: Dedicated `tictactoe_wins` leaderboard tracking the top players globally.
-- **Premium UI**: Uses advanced CSS animations, glowing gradients, and glassmorphism styling for an impressive aesthetic tailored to modern web requirements.
+---
 
-## Architecture
+## 🚀 Live Demo
 
-1. **Backend** (`/tic-tac-toe-backend`):
-   - Uses standard `heroiclabs/nakama` container linked to a single-node `cockroachdb`.
-   - The game logic runs in Nakama's embedded JavaScript runtime, written originally in TypeScript.
-   - Using Rollup, the TypeScript code is bundled into a single `/build/index.js` file which Nakama automatically loads.
-   - The match logic (`src/match_handler.ts`) utilizes the `nkx.Match` interface and stores strict state like marks, board size, timer deadlines, and winners.
-   - Nakama RPCs are abstracted out; instead, standard built-in Matchmaking is used via the `MatchmakerMatched` hook.
+👉 https://tic-tac-toe-nakama-iz69vuoey-yashvendra09s-projects.vercel.app
 
-2. **Frontend** (`/tic-tac-toe-frontend`):
-   - Built with React, Vite, CSS variables, and TypeScript.
-   - Nakama Client via `@heroiclabs/nakama-js` provides `Device Authentication`, `Socket Connections`, and `Leaderboard Queries`.
-   - The state machine transitions seamlessly between Login -> Menu -> Matchmaking -> Game.
+---
 
-## Installation & Deployment
+## ✨ Features
 
-### 1. Start the Backend server (Nakama)
+* 🔐 Device-based authentication (no signup friction)
+* ⚡ Real-time gameplay using WebSockets
+* 🎯 Automatic matchmaking (2-player)
+* ⏱️ Timed matches with turn-based logic
+* 🏆 Global leaderboard (persistent via Postgres)
+* 🔁 Reconnection handling & session recovery
+* 🌐 Fully deployed (frontend + backend)
+
+---
+
+## 🧠 Architecture
+
+Frontend (React + Vite)
+⬇
+Nakama Server (Authoritative game logic)
+⬇
+PostgreSQL (Render DB)
+
+---
+
+## ⚙️ Tech Stack
+
+* Frontend: React, TypeScript, Vite
+* Backend: Nakama (Go-based game server)
+* Database: PostgreSQL (Render)
+* Deployment:
+
+  * Frontend → Vercel
+  * Backend → Render (Dockerized)
+
+---
+
+## 🔥 Key Engineering Decisions
+
+### 1. Authoritative Game Logic
+
+Game state is handled on the server (Nakama match handler), preventing cheating and ensuring consistency across players.
+
+### 2. WebSocket-based Communication
+
+Used Nakama’s real-time socket instead of polling → low latency gameplay.
+
+### 3. Device Authentication Strategy
+
+Avoided traditional auth:
+
+* Generates `deviceId`
+* Handles conflicts (409)
+* Recovers from stale sessions
+
+### 4. Production Deployment Handling
+
+* Resolved Render port binding issues
+* Handled SSL/WSS constraints
+* Configured environment variables securely
+* Avoided hardcoded values
+
+### 5. Fault Tolerance
+
+* Retry logic for auth (cold start handling)
+* Graceful error handling for network failures
+
+---
+
+## 🛠️ Local Setup
+
+### 1. Clone repo
+
+```bash
+git clone https://github.com/Yashvendra09/tic-tac-toe-nakama
+cd tic-tac-toe-nakama
+```
+
+### 2. Setup backend
+
 ```bash
 cd tic-tac-toe-backend
-npm install
-npm run build
-docker-compose up -d
+docker-compose up
 ```
-*Note: Make sure Docker and Docker Compose are installed. This exposes Nakama on `http://127.0.0.1:7350` and the console on port `7351`.*
 
-### 2. Start the Frontend client
+### 3. Setup frontend
+
 ```bash
 cd tic-tac-toe-frontend
 npm install
 npm run dev
 ```
-*The app will be running at `http://localhost:5173`. Open it in two different browser windows to play!*
 
-## API / Server Configuration
-- **Host**: localhost
-- **Port**: 7350 (HTTP) / 7351 (Dashboard)
-- **Dashboard Credentials**: `admin` / `password`
-- **Socket Key**: `defaultkey` (Configured inside `local.yml` and explicitly invoked by React).
+---
 
-## How to test the multiplayer functionality
-1. Get the game running locally on `http://localhost:5173`.
-2. Open two separate browser modes (e.g. Normal and Incognito).
-3. Log in with two different nicknames.
-4. Click "Find Random Match" simultaneously on both screens.
-5. Watch the state synchronise in real-time as moves execute! Try taking longer than 30s to see the automatic forfeit mechanic.
+## 🌍 Environment Variables
 
-Enjoy the application!
+### Frontend (.env)
+
+```
+VITE_NAKAMA_HOST=localhost
+VITE_NAKAMA_PORT=7350
+VITE_NAKAMA_SERVER_KEY=defaultkey
+VITE_NAKAMA_USE_SSL=false
+```
+
+### Production
+
+```
+VITE_NAKAMA_HOST=your-render-url
+VITE_NAKAMA_PORT=443
+VITE_NAKAMA_USE_SSL=true
+```
+
+---
+
+## 📌 Challenges Faced
+
+* WebSocket SSL issues (ws vs wss)
+* Render port restrictions (7350 not exposed)
+* Nakama DB connection format mismatch
+* Cold start delays causing auth timeouts
+* Deployment caching issues (Vercel)
+
+---
+
+## 💡 Learnings
+
+* Real-time systems require strict backend authority
+* Deployment infra matters as much as code
+* WebSocket + SSL handling is tricky in production
+* Debugging distributed systems is non-trivial
+
+---
+
+## 👨‍💻 Author
+
+**Yashvendra Dagur**
